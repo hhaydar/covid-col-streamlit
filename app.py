@@ -149,6 +149,8 @@ try:
 except:
     pass
 st.header("¿Cuál es la situación por departamento?")
+st.markdown("La siguiente tabla permite visualizar la tasa de recuperación por departamento." +
+            " Los datos pueden ser ordenados según la necesidad, por ejemplo: conocer los departamentos con menos casos.")
 st.dataframe(depto_df)
 
 #Sección: Tasa Recuperados
