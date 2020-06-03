@@ -3,6 +3,8 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from scipy import stats
+
 
 @st.cache(ttl=3600,max_entries=50000)
 def get_data():
@@ -97,7 +99,12 @@ tasa_recuperados = recuperados / total_casos
 tasa_fallecidos = fallecidos / total_casos
 fecha_reporte = df['fecha_reporte_web'].max()
 edad_promedio = df['Edad'].median()
-edad_mas_casos = df['Edad'].mode()[0]
+
+try:
+    edad_mas_casos = df['Edad'].mode()[0]
+except:
+    edad_mas_casos = edad_promedio
+
 edad_maxima = df['Edad'].max()
 total_casos_hombres = df[df['Sexo'] == 'M']['Sexo'].count()
 total_casos_mujeres = df[df['Sexo'] == 'F']['Sexo'].count()
@@ -108,11 +115,19 @@ recuperados_mujeres = df[(df['Recuperado']=='Si')&(df['Sexo']=='F')]['Recuperado
 tasa_recuperacion_hombres = recuperados_hombres / recuperados
 tasa_recuperacion_mujeres = recuperados_mujeres / recuperados
 edad_prom_mas_muerte = df[df['Falleció'] == 'Si']['Edad'].median()
-edad_mas_muerte = df[df['Falleció'] == 'Si']['Edad'].mode()[0]
+
+try:
+    edad_mas_muerte = df[df['Falleció'] == 'Si']['Edad'].mode()[0]
+except:
+    edad_mas_muerte = edad_prom_mas_muerte
+
 min_dia_tratamiento_recu = df[(df['Recuperado']=='Si')&(df['Días de tratamiento']>0)]['Días de tratamiento'].min()
 max_dia_tratamiento_recu = df[(df['Recuperado']=='Si')&(df['Días de tratamiento']>0)]['Días de tratamiento'].max()
 prom_dia_tratamiento_recu = df[(df['Recuperado']=='Si')&(df['Días de tratamiento']>0)]['Días de tratamiento'].median()
-mode_dia_tratamiento_recu = df[(df['Recuperado']=='Si')&(df['Días de tratamiento']>0)]['Días de tratamiento'].mode()[0]
+try:
+    mode_dia_tratamiento_recu = df[(df['Recuperado']=='Si')&(df['Días de tratamiento']>0)]['Días de tratamiento'].mode()[0]
+except:
+    mode_dia_tratamiento_recu = prom_dia_tratamiento_recu
 
 #Introducción
 st.title("{:,}".format(total_casos) + " Casos positivos COVID-19 en " + depto)
