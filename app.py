@@ -86,9 +86,21 @@ def get_data_recuperados(df):
     #Return data
     return recu_df
 
+@st.cache(ttl=3600,max_entries=50000)
+def get_data_fallecidos(df):
+    fallecio_df = pd.crosstab(df['fecha_reporte_web'],df['Falleció'], margins=True,
+                    margins_name='Total', rownames=['Fecha'], colnames=['Fallecido'])
+    fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
+    fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
+    fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
+
+    #Return data
+    return fallecio_df
+
 #Create web-page
 df = get_data()
 df_pais_recuperados = get_data_recuperados(df.copy())
+df_pais_fallecidos = get_data_fallecidos(df.copy())
 
 #Radiobutton con la lista de departamentos o distritos
 lista_depto = sorted(df['Departamento_o_Distrito_'].unique())
@@ -186,12 +198,37 @@ if depto != 'Colombia':
 f.add_trace(go.Scatter(x=recu_df.index, y=recu_df['% Acumulado Recuperados'],
                     mode='lines+markers',
                     name='Total Casos ' + depto))
-
-#f = px.line(recu_df, x=recu_df.index, y='% Acumulado Recuperados', labels={'x':'Fecha'})
 f.update_xaxes(title="Fecha")
 f.update_yaxes(title="% Acumulado Personas Recuperadas")
 st.plotly_chart(f)
 
+#Sección: Tasa Letalidad
+
+#Sección: Tasa Letalidad
+st.header("¿Cuál es la tasa de letalidad desde el " + fecha_reporte_inicial.strftime("%d-%m-%Y") + "?")
+st.markdown("Al día de hoy en " + depto +
+            " han fallecido {:,}".format(fallecidos) + " personas, " +
+            " representando cerca del {:.2%}".format(tasa_fallecidos) + " de todos los casos.")
+fallecio_df = pd.crosstab(df['fecha_reporte_web'],df['Falleció'], margins=True,
+                margins_name='Total', rownames=['Fecha'], colnames=['Fallecido'])
+fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
+fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
+fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
+#Initialize Figure
+f = go.Figure()
+
+if depto != 'Colombia':
+    f.add_trace(go.Scatter(x=df_pais_recuperados.index, y=df_pais_fallecidos['% Acumulado Fallecidos'],
+                    mode='lines',
+                    name='Total Casos Colombia'))
+
+f.add_trace(go.Scatter(x=fallecio_df.index, y=fallecio_df['% Acumulado Fallecidos'],
+                    mode='lines+markers',
+                    name='Total Casos ' + depto))
+
+f.update_xaxes(title="Fecha")
+f.update_yaxes(title="% Acumulado Personas Fallecidas")
+st.plotly_chart(f)
 
 #Sección: Distribución Edad
 st.header("¿Cuál es la distribución de casos por edad?")
