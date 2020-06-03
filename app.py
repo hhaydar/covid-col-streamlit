@@ -3,8 +3,6 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
-from scipy import stats
-
 
 @st.cache(ttl=3600,max_entries=50000)
 def get_data():
