@@ -75,8 +75,20 @@ def get_data():
     #Return data
     return data
 
+@st.cache(ttl=3600,max_entries=50000)
+def get_data_recuperados(df):
+    recu_df = pd.crosstab(df['fecha_reporte_web'],df['Recuperado'], margins=True,
+                    margins_name='Total', rownames=['Fecha'], colnames=['Recuperado'])
+    recu_df['Recuperados Acumulado'] = recu_df['Si'].cumsum()
+    recu_df['Total Recuperados Acumulado'] = recu_df['Total'].cumsum()
+    recu_df['% Acumulado Recuperados'] = (recu_df['Recuperados Acumulado'] / recu_df['Total Recuperados Acumulado'])*100
+
+    #Return data
+    return recu_df
+
 #Create web-page
 df = get_data()
+df_pais_recuperados = get_data_recuperados(df.copy())
 
 #Radiobutton con la lista de departamentos o distritos
 lista_depto = sorted(df['Departamento_o_Distrito_'].unique())
@@ -163,7 +175,19 @@ recu_df = pd.crosstab(df['fecha_reporte_web'],df['Recuperado'], margins=True,
 recu_df['Recuperados Acumulado'] = recu_df['Si'].cumsum()
 recu_df['Total Recuperados Acumulado'] = recu_df['Total'].cumsum()
 recu_df['% Acumulado Recuperados'] = (recu_df['Recuperados Acumulado'] / recu_df['Total Recuperados Acumulado'])*100
-f = px.line(recu_df, x=recu_df.index, y='% Acumulado Recuperados', labels={'x':'Fecha'})
+#Initialize Figure
+f = go.Figure()
+
+if depto != 'Colombia':
+    f.add_trace(go.Scatter(x=df_pais_recuperados.index, y=df_pais_recuperados['% Acumulado Recuperados'],
+                    mode='lines',
+                    name='Total Casos Colombia'))
+
+f.add_trace(go.Scatter(x=recu_df.index, y=recu_df['% Acumulado Recuperados'],
+                    mode='lines+markers',
+                    name='Total Casos ' + depto))
+
+#f = px.line(recu_df, x=recu_df.index, y='% Acumulado Recuperados', labels={'x':'Fecha'})
 f.update_xaxes(title="Fecha")
 f.update_yaxes(title="% Acumulado Personas Recuperadas")
 st.plotly_chart(f)
