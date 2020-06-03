@@ -60,6 +60,7 @@ def get_data():
                         labels=['0-5', '5-15', '15-25', '25-45', '45-65', '65-75', '75->'])
 
     #Días Recuperación
+    data['FIS'].fillna(data['fecha_reporte_web'], inplace=True)
     data['Días de tratamiento'] = abs(data['Fecha_recuperado'] - data['FIS'])
     data['Días de tratamiento'] = data['Días de tratamiento'].astype('timedelta64[D]')
     data['Días de tratamiento'].fillna(0, inplace=True)
