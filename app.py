@@ -95,6 +95,7 @@ recuperados =  df[df['Recuperado']=='Si']['Recuperado'].count()
 fallecidos =  df[df['Falleció']=='Si']['Falleció'].count()
 tasa_recuperados = recuperados / total_casos
 tasa_fallecidos = fallecidos / total_casos
+fecha_reporte_inicial = df['fecha_reporte_web'].min()
 fecha_reporte = df['fecha_reporte_web'].max()
 edad_promedio = df['Edad'].median()
 
@@ -137,6 +138,33 @@ st.markdown("Reportados al " + fecha_reporte.strftime("%d-%m-%Y") +
             " lo que indica que {:,}".format(fallecidos) + " personas fallecieron por causa del virus.")
 st.write("""Datos obtenidos desde
 [`datos.gov.co`](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia/gt2j-8ykr/data).""")
+
+#Sección: Afectación Por Departamento o Distrito
+depto_df = pd.crosstab(df['Departamento_o_Distrito_'],df['Recuperado'],
+             margins=True, margins_name='Total Casos', rownames=['Departamento'], colnames=['Recuperado'])
+try:
+    depto_df['% Recuperados'] = (depto_df['Si'] / depto_df['Total Casos']) * 100
+    depto_df.drop('No', axis=1, inplace=True)
+    depto_df.rename(columns={'Si':'Recuperados'}, inplace=True)
+except:
+    pass
+st.header("¿Cuál es la situación por departamento?")
+st.dataframe(depto_df)
+
+#Sección: Tasa Recuperados
+st.header("¿Cuál es la tasa de recuperación desde el " + fecha_reporte_inicial.strftime("%d-%m-%Y") + "?")
+st.markdown("Al día de hoy en " + depto +
+            " se han recuperado {:,}".format(recuperados) + " personas, " +
+            " representando cerca del {:.2%}".format(tasa_recuperados) + " de todos los casos.")
+recu_df = pd.crosstab(df['fecha_reporte_web'],df['Recuperado'], margins=True,
+                 margins_name='Total', rownames=['Fecha'], colnames=['Recuperado'])
+recu_df['Recuperados Acumulado'] = recu_df['Si'].cumsum()
+recu_df['Total Recuperados Acumulado'] = recu_df['Total'].cumsum()
+recu_df['% Acumulado Recuperados'] = (recu_df['Recuperados Acumulado'] / recu_df['Total Recuperados Acumulado'])*100
+f = px.line(recu_df, x=recu_df.index, y='% Acumulado Recuperados', labels={'x':'Fecha'})
+f.update_xaxes(title="Fecha")
+f.update_yaxes(title="% Acumulado Personas Recuperadas")
+st.plotly_chart(f)
 
 
 #Sección: Distribución Edad
