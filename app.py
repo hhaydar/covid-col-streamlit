@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
-@st.cache
+@st.cache(ttl=3600,max_entries=50000)
 def get_data():
     url = 'https://www.datos.gov.co/api/views/gt2j-8ykr/rows.csv?'
     url = url + 'accessType=DOWNLOAD&bom=true&format=true&delimiter=%3B'
@@ -129,8 +129,6 @@ st.write("""Datos obtenidos desde
 st.header("¿Cuál es la distribución de casos por edad?")
 st.write("La edad promedio de casos positivos es de {:.0f} años,".format(edad_promedio) + 
          " sin embargo, se presentaron más casos en personas de {:.0f} años.".format(edad_mas_casos))
-st.write(" Si desea puede seleccionar un rango menor desde la barra de herramientas.")
-#values = st.sidebar.slider("Edad", float(df.Edad.min()), float(df.Edad.clip(upper=120.).max()), (0., 100.))
 f = px.histogram(df, x="Edad", nbins=15, title=None)
 f.update_xaxes(title="Edad")
 f.update_yaxes(title="Casos positivos")
