@@ -61,7 +61,7 @@ def get_data():
 
     #Días Recuperación
     data['FIS'].fillna(data['fecha_reporte_web'], inplace=True)
-    data['Días de tratamiento'] = abs(data['Fecha_recuperado'] - data['FIS'])
+    data['Días de tratamiento'] = abs(data['fecha_reporte_web'] - data['FIS'])
     data['Días de tratamiento'] = data['Días de tratamiento'].astype('timedelta64[D]')
     data['Días de tratamiento'].fillna(0, inplace=True)
     data['Días de tratamiento'] = data['Días de tratamiento'].astype(int)
