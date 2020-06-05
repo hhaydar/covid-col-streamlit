@@ -51,8 +51,8 @@ def get_data():
 
     #Feature Engenieering
     #New Features
-    data['Recuperado'] = np.where(data['Fecha_recuperado'].notnull(), 'Si', 'No')
-    data['Falleció'] = np.where(data['Fecha_de_muerte'].notnull(), 'Si', 'No')
+    data['Recuperado'] = np.where(data['atención'] == 'Recuperado', 'Si', 'No')
+    data['Falleció'] = np.where(data['atención'] == 'Fallecido', 'Si', 'No')
     data['Extranjero'] = np.where(data['País_de_procedencia'] == 'Colombia', 'No', 'Si')
 
     #Edad
