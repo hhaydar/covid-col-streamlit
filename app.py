@@ -89,11 +89,15 @@ def get_data_recuperados(df):
 @st.cache(ttl=3600,max_entries=50000)
 def get_data_fallecidos(df):
     fallecio_df = pd.crosstab(df['fecha_reporte_web'],df['Falleció'], margins=True,
-                    margins_name='Total', rownames=['Fecha'], colnames=['Fallecido'])
-    fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
-    fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
-    fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
-
+                        margins_name='Total', rownames=['Fecha'], colnames=['Fallecido'])
+    try:
+        fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
+        fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
+        fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
+    except:
+        fallecio_df['Fallecidos Acumulado'] = 0
+        fallecio_df['Total Fallecidos Acumulado'] = 0
+        fallecio_df['% Acumulado Fallecidos'] = 0
     #Return data
     return fallecio_df
 
@@ -211,9 +215,14 @@ st.markdown("Al día de hoy en " + depto +
             " representando cerca del {:.2%}".format(tasa_fallecidos) + " de todos los casos.")
 fallecio_df = pd.crosstab(df['fecha_reporte_web'],df['Falleció'], margins=True,
                 margins_name='Total', rownames=['Fecha'], colnames=['Fallecido'])
-fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
-fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
-fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
+try:
+    fallecio_df['Fallecidos Acumulado'] = fallecio_df['Si'].cumsum()
+    fallecio_df['Total Fallecidos Acumulado'] = fallecio_df['Total'].cumsum()
+    fallecio_df['% Acumulado Fallecidos'] = (fallecio_df['Fallecidos Acumulado'] / fallecio_df['Total Fallecidos Acumulado'])*100
+except:
+    fallecio_df['Fallecidos Acumulado'] = 0
+    fallecio_df['Total Fallecidos Acumulado'] = 0
+    fallecio_df['% Acumulado Fallecidos'] = 0
 #Initialize Figure
 f = go.Figure()
 
