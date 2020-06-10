@@ -307,4 +307,5 @@ st.plotly_chart(f)
 st.header("Dónde estan ubicados?")
 st.subheader("Mapa casos positivos")
 st.markdown("El siguiente mapa muestra los departamentos con casos positivos")
-st.map(df[['lat','lon']])
+
+st.map(df[df['lat'].notnull()][['lat','lon']])
