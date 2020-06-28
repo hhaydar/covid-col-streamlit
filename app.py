@@ -76,6 +76,17 @@ def get_data():
     return data
 
 @st.cache(ttl=3600,max_entries=50000)
+def get_data_velocidad_propagacion(df):
+    dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W')])['fecha_reporte_web'].count().to_frame()
+    dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
+    dg.drop(dg[dg.index < '2020-04-01'].index, inplace=True)
+    dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
+    dg['Velocidad de Propagación'] = dg['Número de casos'] / dg['Fila Anterior Número de casos']
+
+    #Return data
+    return dg
+
+@st.cache(ttl=3600,max_entries=50000)
 def get_data_recuperados(df):
     recu_df = pd.crosstab(df['fecha_reporte_web'],df['Recuperado'], margins=True,
                     margins_name='Total', rownames=['Fecha'], colnames=['Recuperado'])
@@ -105,6 +116,7 @@ def get_data_fallecidos(df):
 df = get_data()
 df_pais_recuperados = get_data_recuperados(df.copy())
 df_pais_fallecidos = get_data_fallecidos(df.copy())
+df_pais_velocidad_propagacion = get_data_velocidad_propagacion(df.copy())
 
 #Radiobutton con la lista de departamentos o distritos
 lista_depto = sorted(df['Departamento_o_Distrito_'].unique())
@@ -166,6 +178,57 @@ st.markdown("Reportados al " + fecha_reporte.strftime("%d-%m-%Y") +
             " lo que indica que {:,}".format(fallecidos) + " personas fallecieron por causa del virus.")
 st.write("""Datos obtenidos desde
 [`datos.gov.co`](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia/gt2j-8ykr/data).""")
+
+
+#Sección: Factor de Crecimiento
+
+#dg = df.groupby('fecha_reporte_web')['fecha_reporte_web'].agg(['count'])
+#dg.rename(columns={'count':'Número de casos'}, inplace=True)
+dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W')])['fecha_reporte_web'].count().to_frame()
+dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
+dg.drop(dg[dg.index < '2020-04-01'].index, inplace=True)
+dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
+dg['Velocidad de Propagación'] = dg['Número de casos'] / dg['Fila Anterior Número de casos']
+vp = dg[dg.index==dg.index.max()]['Velocidad de Propagación'][0]
+
+st.header("¿Qué tan rápido se propaga el virus?")
+st.markdown("El factor de crecimiento o velocidad de propagación del virus es una medida que" +
+            "permite determinar que tan rápido se contagian las personas." + 
+            " Si el número de reproducción es mayor que 1, cada persona infectada transmite " +
+            "la enfermedad al menos a una persona más." + " Para " + depto + 
+            " ese valor es de :  {:.4}".format(vp))
+
+#Initialize Figure
+f = go.Figure()
+
+if depto != 'Colombia':
+    f.add_trace(go.Scatter(x=df_pais_velocidad_propagacion.index,
+                            y=df_pais_velocidad_propagacion['Velocidad de Propagación'],
+                            mode='lines',
+                            name='Colombia'))
+
+f.add_trace(go.Scatter(
+    x=dg.index,
+    y=dg['Velocidad de Propagación'],
+    mode='lines+markers',
+    name=depto
+))
+f.add_shape(
+        # Line Horizontal
+            type="line",
+            x0=dg.index.min(),
+            y0=1,
+            x1=dg.index.max(),
+            y1=1,
+            line=dict(
+                color="green",
+                width=2,
+                dash="solid",
+            ),
+    )
+f.update_xaxes(title="Fecha (Semana a Semana, desde 01/Abril de 2020)")
+f.update_yaxes(title="Velocidad de Propagación")
+st.plotly_chart(f)
 
 #Sección: Afectación Por Departamento o Distrito
 depto_df = pd.crosstab(df['Departamento_o_Distrito_'],df['Recuperado'],
