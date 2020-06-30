@@ -77,7 +77,7 @@ def get_data():
 
 @st.cache(ttl=3600,max_entries=50000)
 def get_data_velocidad_propagacion(df):
-    dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W')])['fecha_reporte_web'].count().to_frame()
+    dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W-MON')])['fecha_reporte_web'].count().to_frame()
     dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
     dg.drop(dg[dg.index < '2020-04-01'].index, inplace=True)
     dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
@@ -184,7 +184,7 @@ st.write("""Datos obtenidos desde
 
 #dg = df.groupby('fecha_reporte_web')['fecha_reporte_web'].agg(['count'])
 #dg.rename(columns={'count':'Número de casos'}, inplace=True)
-dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W')])['fecha_reporte_web'].count().to_frame()
+dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W-MON')])['fecha_reporte_web'].count().to_frame()
 dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
 dg.drop(dg[dg.index < '2020-04-01'].index, inplace=True)
 dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
@@ -193,7 +193,7 @@ vp = dg[dg.index==dg.index.max()]['Velocidad de Propagación'][0]
 
 st.header("¿Qué tan rápido se propaga el virus?")
 st.markdown("El factor de crecimiento o velocidad de propagación del virus es una medida que" +
-            "permite determinar que tan rápido se contagian las personas." + 
+            " permite determinar que tan rápido se contagian las personas." + 
             " Si el número de reproducción es mayor que 1, cada persona infectada transmite " +
             "la enfermedad al menos a una persona más." + " Para " + depto + 
             " ese valor es de :  {:.4}".format(vp))
