@@ -9,15 +9,29 @@ def get_data():
     url = 'https://www.datos.gov.co/api/views/gt2j-8ykr/rows.csv?'
     url = url + 'accessType=DOWNLOAD&bom=true&format=true&delimiter=%3B'
 
+    #Leer código Division Pólitica Admin para corregir posibles falata de datos
+    #con el nombre del departamento
+    df_cod_divipola = pd.read_excel('dataset/codigo_divipola.xls')
+    cod_divipola_dict = dict(zip(df_cod_divipola.CODIGO, df_cod_divipola.DEPARTAMENTO))
+
     #Por si algo sale mal al momento de leer los datos
     try:
         data = pd.read_csv(url, sep=';')
     except:
-        data = pd.read_csv('dataset/covid-01-06-2020.csv', sep=';')
+        data = pd.read_csv('dataset/Casos_positivos_de_COVID-19_en_Colombia.csv', sep=';')
 
     #Replace \n (newline) for all columns
     data.rename(columns=lambda s: s.replace(' ', '_'), inplace=True)
     data.rename(columns={'ID_de_caso':'casos'}, inplace=True)
+
+    #Corregir departamentos sin datos NaN
+    #buscar el nombre en el diccionario apartir del código
+    data.loc[data['Departamento_o_Distrito_'].isnull(),'Departamento_o_Distrito_'] = data['Código_DIVIPOLA'].map(cod_divipola_dict)
+
+    #Corregir NaN en departamento y Ciudad (Solo si el código anterior no funcionó)
+    data['Departamento_o_Distrito_'].fillna('No definido', inplace=True)
+    data['Ciudad_de_ubicación'].fillna('No definido', inplace=True)
+
 
     #Información de latitud y longitud para los departamentos del dataset(únicamente)
     data_geo = pd.read_csv('dataset/departamentos_geocode_lat_lon.csv')
@@ -55,10 +69,6 @@ def get_data():
     data['Falleció'] = np.where(data['atención'] == 'Fallecido', 'Si', 'No')
     data['Extranjero'] = np.where(data['País_de_procedencia'] == 'Colombia', 'No', 'Si')
 
-    #Corregir NaN en departamento y Ciudad
-    data['Departamento_o_Distrito_'].fillna('No definido', inplace=True)
-    data['Ciudad_de_ubicación'].fillna('No definido', inplace=True)
-    
     #Edad
     data['Rango_Edad'] = pd.cut(x=data['Edad'], bins=[0, 5, 15, 25, 45, 65, 75, 999],
                         labels=['0-5', '5-15', '15-25', '25-45', '45-65', '65-75', '75->'])
