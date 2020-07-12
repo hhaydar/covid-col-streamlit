@@ -55,6 +55,10 @@ def get_data():
     data['Falleció'] = np.where(data['atención'] == 'Fallecido', 'Si', 'No')
     data['Extranjero'] = np.where(data['País_de_procedencia'] == 'Colombia', 'No', 'Si')
 
+    #Corregir NaN en departamento y Ciudad
+    data['Departamento_o_Distrito_'].fillna('No definido', inplace=True)
+    data['Ciudad_de_ubicación'].fillna('No definido', inplace=True)
+    
     #Edad
     data['Rango_Edad'] = pd.cut(x=data['Edad'], bins=[0, 5, 15, 25, 45, 65, 75, 999],
                         labels=['0-5', '5-15', '15-25', '25-45', '45-65', '65-75', '75->'])
