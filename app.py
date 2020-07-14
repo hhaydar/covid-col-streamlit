@@ -91,8 +91,8 @@ def get_data():
 
 @st.cache(ttl=3600,max_entries=50000)
 def get_data_velocidad_propagacion(df):
-    dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W', label='left')])['fecha_reporte_web'].count().to_frame()
-    #dg.drop(dg.tail(1).index,inplace=True) #drop last row, incomplete 5D seven days
+    dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W', label='right')])['fecha_reporte_web'].count().to_frame()
+    dg.drop(dg.tail(1).index,inplace=True) #drop last row, incomplete 5D seven days
     dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
     dg.drop(dg[dg.index < '2020-03-15'].index, inplace=True)
     dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
@@ -199,9 +199,9 @@ st.write("""Datos obtenidos desde
 
 #dg = df.groupby('fecha_reporte_web')['fecha_reporte_web'].agg(['count'])
 #dg.rename(columns={'count':'Número de casos'}, inplace=True)
-dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W', label='left')])['fecha_reporte_web'].count().to_frame()
+dg = df.groupby([pd.Grouper(key='fecha_reporte_web', freq='W', label='right')])['fecha_reporte_web'].count().to_frame()
 dg.rename(columns={'fecha_reporte_web':'Número de casos'}, inplace=True)
-#dg.drop(dg.tail(1).index,inplace=True) #drop last row, incomplete 7D seven days
+dg.drop(dg.tail(1).index,inplace=True) #drop last row, incomplete 7D seven days
 dg.drop(dg[dg.index < '2020-03-15'].index, inplace=True)
 dg['Fila Anterior Número de casos'] = dg['Número de casos'].shift()
 dg['Velocidad de Propagación'] = dg['Número de casos'] / dg['Fila Anterior Número de casos']
