@@ -6,19 +6,27 @@ import plotly.graph_objects as go
 
 @st.cache(ttl=3600,max_entries=50000)
 def get_data():
+
+    # the file read it's 200MB too big for download
+    '''
     url = 'https://www.datos.gov.co/api/views/gt2j-8ykr/rows.csv?'
     url = url + 'accessType=DOWNLOAD&bom=true&format=true&delimiter=%3B'
 
-    #Leer código Division Pólitica Admin para corregir posibles falata de datos
-    #con el nombre del departamento
-    df_cod_divipola = pd.read_excel('dataset/codigo_divipola.xls')
-    cod_divipola_dict = dict(zip(df_cod_divipola.CODIGO, df_cod_divipola.DEPARTAMENTO))
-
+    
     #Por si algo sale mal al momento de leer los datos
     try:
         data = pd.read_csv(url, sep=';')
     except:
         data = pd.read_csv('dataset/Casos_positivos_de_COVID-19_en_Colombia.csv', sep=';')
+    '''
+    #Leer código Division Pólitica Admin para corregir posibles falata de datos
+    #con el nombre del departamento
+    df_cod_divipola = pd.read_excel('dataset/codigo_divipola.xls')
+    cod_divipola_dict = dict(zip(df_cod_divipola.CODIGO, df_cod_divipola.DEPARTAMENTO))
+
+    #read off-line
+    data = pd.read_csv('dataset/Casos_positivos_de_COVID-19_en_Colombia.csv', sep=';')
+
 
     #Replace \n (newline) for all columns
     data.rename(columns=lambda s: s.replace(' ', '_'), inplace=True)
