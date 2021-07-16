@@ -23,7 +23,7 @@ pip install streamlit
 ```
 
 ## Web Page Usage
-https://aibu-app-covid-col.herokuapp.com/
+https://hh-covid-col.herokuapp.com/
 
 ## API Usage
 No Api.
