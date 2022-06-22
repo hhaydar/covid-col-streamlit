@@ -101,7 +101,7 @@ nltk==3.5
 notebook==6.0.3
 numba==0.49.1
 numexpr==2.7.1
-numpy==1.18.4
+numpy==1.22.0
 openpyxl==3.0.3
 openTSNE==0.4.3
 orange-canvas-core==0.1.12
